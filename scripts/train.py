@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 """
 Usage:
     main.py [options]
@@ -31,11 +32,11 @@ import numpy as np
 
 
 args = docopt(__doc__)
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-if str(device) == 'cuda:0':
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if str(device) == "cuda:0":
     print("Currently using GPU: {}".format(device))
-    np.random.seed(int(args['--seed']))
-    torch.cuda.manual_seed_all(int(args['--seed']))
+    np.random.seed(int(args["--seed"]))
+    torch.cuda.manual_seed_all(int(args["--seed"]))
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 else:
@@ -46,38 +47,34 @@ else:
 #####################################################################
 now = datetime.datetime.now()
 filename = now.strftime("%Y-%m-%d-%H:%M:%S")
-fw = open('configs/' + filename + '.json', 'a')
-model_path = filename + '.pt'
-args['--checkpoint-path'] = model_path
+fw = open("../configs/" + filename + ".json", "a")
+model_path = filename + ".pt"
+args["--checkpoint-path"] = model_path
 json.dump(args, fw, sort_keys=True, indent=2)
 #####################################################################
 # Define Dataloaders
 #####################################################################
-train_dataset = DataClass(args, args['--train-path'])
-train_data_loader = DataLoader(train_dataset,
-                               batch_size=int(args['--train-batch-size']),
-                               shuffle=True
-                               )
-print('The number of training batches: ', len(train_data_loader))
-dev_dataset = DataClass(args, args['--dev-path'])
-dev_data_loader = DataLoader(dev_dataset,
-                             batch_size=int(args['--eval-batch-size']),
-                             shuffle=False
-                             )
-print('The number of validation batches: ', len(dev_data_loader))
+train_dataset = DataClass(args, args["--train-path"])
+train_data_loader = DataLoader(
+    train_dataset, batch_size=int(args["--train-batch-size"]), shuffle=True
+)
+print("The number of training batches: ", len(train_data_loader))
+dev_dataset = DataClass(args, args["--dev-path"])
+dev_data_loader = DataLoader(
+    dev_dataset, batch_size=int(args["--eval-batch-size"]), shuffle=False
+)
+print("The number of validation batches: ", len(dev_data_loader))
 #############################################################################
 # Define Model & Training Pipeline
 #############################################################################
-model = SpanEmo(output_dropout=float(args['--output-dropout']),
-                lang=args['--lang'],
-                joint_loss=args['--loss-type'],
-                alpha=float(args['--alpha-loss']))
+model = SpanEmo(
+    output_dropout=float(args["--output-dropout"]),
+    lang=args["--lang"],
+    joint_loss=args["--loss-type"],
+    alpha=float(args["--alpha-loss"]),
+)
 #############################################################################
 # Start Training
 #############################################################################
 learn = Trainer(model, train_data_loader, dev_data_loader, filename=filename)
-learn.fit(
-    num_epochs=int(args['--max-epoch']),
-    args=args,
-    device=device
-)
+learn.fit(num_epochs=int(args["--max-epoch"]), args=args, device=device)

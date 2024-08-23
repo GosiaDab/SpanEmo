@@ -1,0 +1,7 @@
+services:
+  python:
+      container_name: spanemo_python
+      build:
+        context: .
+      volumes:
+        - .:/home
